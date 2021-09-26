@@ -9,7 +9,9 @@ def chrome():
     # support to get response status and headers
     d = webdriver.DesiredCapabilities.CHROME
     d['loggingPrefs'] = {'performance': 'ALL'}
-    opt = webdriver.ChromeOptions()
+    opt = webdriver.ChromeOptions() 
+    prefs = {'download_restrictions' : 3}
+    opt.add_experimental_option("prefs", prefs)
     opt.add_experimental_option('excludeSwitches', ['enable-logging'])
     opt.add_experimental_option("useAutomationExtension", False)
     opt.add_argument("--disable-extensions")
@@ -54,7 +56,7 @@ for load_more in tqdm(range(load_more_times), desc= "Overall Progress"):
             app_page_link = app.find('a')['href']
             app_page_link = 'https://apkpure.com'+app_page_link
             browser.get(app_page_link)
-            time.sleep(2)
+            browser.implicitly_wait(1)
             appInfo_src = browser.page_source
             app_page = BeautifulSoup(appInfo_src, 'lxml')
 
@@ -92,7 +94,15 @@ for load_more in tqdm(range(load_more_times), desc= "Overall Progress"):
             downloadLink_box = download_link_section.find('div', {'class': 'div-box'})
             downloadLink = downloadLink_box.find('a')['href']
             downloadLink = 'https://apkpure.com'+downloadLink
-            # print(downloadLink)
+
+            # go to the download page and download the app
+            browser.get(downloadLink)
+            browser.implicitly_wait(1)
+            download_pageSrc = browser.page_source
+            download_page = BeautifulSoup(download_pageSrc, 'lxml')
+            download_link_tag = download_page.find('p', {'class': 'down-click'})
+            download_link = download_link_tag.find('a')['href']
+            # print(download_link)
             # -------------------------------Section 3-----------------------------------
             # Description of the App
             description_section = info_box.find('div', {'class': 'describe'})
@@ -114,12 +124,12 @@ for load_more in tqdm(range(load_more_times), desc= "Overall Progress"):
             # print(text_description)
 
             application_description = {
-            'Category' : category,
-            'iconUrl' : icon_url,
+            'SubCategory' : category,
+            'IconUrl' : icon_url,
             'AppName' : name,
             'PublisherName' : publisher_name,
-            'DownloadLink' : downloadLink,
-            'Video_And_Images_URL' : video_pic_links,
+            'DownloadLink' : download_link,
+            'VideoAndImagesURL' : video_pic_links,
             'TextDescription' : text_description,
             }
             data.append(application_description)
